@@ -68,8 +68,8 @@ This project provides a complete workflow for:
 
 ```bash
 # Clone the repository
-git clone https://github.com/Digazz19/PI-H-Index.git
-cd PI-H-Index
+git clone https://github.com/pinetreeaxe/BiblioMetric-Analyzer.git
+cd BiblioMetric-Analyzer
 
 # Install required packages
 pip install -r requirements.txt
