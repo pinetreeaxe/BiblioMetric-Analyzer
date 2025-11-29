@@ -1,0 +1,20 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.python-version
+
+# Virtual environments
+.venv
+.env
+
+# vs code
+.vscode/
+
+# Foldes to ignore
+info/
+Predictions/
+**/cited_by_data/
