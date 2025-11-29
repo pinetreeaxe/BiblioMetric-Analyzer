@@ -235,7 +235,7 @@ fig_h.add_scatter(
     name="Power-Law Forecast",
     line=dict(color="green", dash="dash")
 )
-st.plotly_chart(fig_h, use_container_width=True)
+st.plotly_chart(fig_h, width='stretch')
 
 # ============================================================
 # SLOPE ANALYSIS
@@ -251,7 +251,7 @@ if not local_slopes.empty:
         markers=True,
         title="Local slope (3-year rolling window)"
     )
-    st.plotly_chart(fig_slope, use_container_width=True)
+    st.plotly_chart(fig_slope, width='stretch')
 else:
     st.info("Insufficient data to calculate local slopes.")
 
@@ -261,7 +261,7 @@ else:
 st.header("🔢 Citations per Year")
 citations_by_year = df.groupby("Year")["Cited by"].sum().reset_index()
 fig_cit = px.bar(citations_by_year, x="Year", y="Cited by", title="Total Citations per Year")
-st.plotly_chart(fig_cit, use_container_width=True)
+st.plotly_chart(fig_cit, width='stretch')
 
 # ============================================================
 # PUBLICATIONS TABLE
@@ -389,7 +389,7 @@ fig_pred = px.line(
     title=f"H-Index Prediction (Training up to {cutoff_year}, Prediction after)",
     color_discrete_map=color_map
 )
-st.plotly_chart(fig_pred, use_container_width=True)
+st.plotly_chart(fig_pred, width='stretch')
 
 # ============================================================
 # SHAPE PARAMETERS
@@ -460,7 +460,7 @@ else:
             markers=True,
             title="Evolution of parameter a (Hirsch: h(t) = a√t + b)"
         )
-        st.plotly_chart(fig_hir_a, use_container_width=True)
+        st.plotly_chart(fig_hir_a, width='stretch')
 
     # Power-law 'b' exponent evolution
     if shape_evol["power_b"].notna().sum() > 0:
@@ -471,7 +471,7 @@ else:
             markers=True,
             title="Evolution of exponent b (Power-law: h(t) = a·t^b)"
         )
-        st.plotly_chart(fig_pow_b, use_container_width=True)
+        st.plotly_chart(fig_pow_b, width='stretch')
 
     # RMSE evolution
     rmse_cols = ["lin_rmse", "hirsch_rmse", "power_rmse", "exp_rmse"]
@@ -496,7 +496,7 @@ else:
             markers=True,
             title="Fit quality (RMSE) over the years"
         )
-        st.plotly_chart(fig_rmse, use_container_width=True)
+        st.plotly_chart(fig_rmse, width='stretch')
 
 # ============================================================
 # HIRSCH METRICS
