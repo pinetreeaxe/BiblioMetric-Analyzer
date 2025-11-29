@@ -4,7 +4,7 @@ A Python-based toolkit for collecting, analyzing, and visualizing academic publi
 
 ## 🎯 Overview
 
-**PI-H-Index** provides a complete workflow for:
+This project provides a complete workflow for:
 - Automated data collection from Scopus API
 - H-index temporal evolution analysis
 - Growth pattern modeling (Linear, Power-law, Hirsch, Exponential)
