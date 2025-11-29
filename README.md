@@ -1,4 +1,4 @@
-# Digazz19/PI-H-Index: Comprehensive Bibliometric Analysis System
+# Comprehensive Bibliometric Analysis System
 
 A Python-based toolkit for collecting, analyzing, and visualizing academic publication metrics from Scopus API. Features h-index tracking, growth model fitting, and interactive dashboards for bibliometric research.
 
@@ -101,6 +101,7 @@ SCOPUS_INST_TOKEN=your_institution_token_here
 1. Register at [Elsevier Developer Portal](https://dev.elsevier.com/)
 2. Create an application to get your API Key
 3. Obtain Institution Token from your library (if applicable)
+4. You'll need to talk with Elsevier Support Team to give you a REFEID token within your API Key to be able to run option 4 without errors
 
 ## 🏃 Quick Start
 
@@ -407,11 +408,11 @@ If you use this tool in your research, please cite:
 ```bibtex
 @software{pi_h_index_2025,
   author = {Abreu, Diogo and Machado, João and Lopes, Pedro},
-  title = {Digazz19/PI-H-Index: Comprehensive Bibliometric Analysis System},
+  title = {pinetreeaxe/BiblioMetric-Analyzer: Comprehensive Bibliometric Analysis System},
   year = {2025},
   month = {11},
   version = {1.0},
-  url = {https://github.com/Digazz19/PI-H-Index}
+  url = {https://github.com/pinetreeaxe/BiblioMetric-Analyzer}
 }
 ```
 
