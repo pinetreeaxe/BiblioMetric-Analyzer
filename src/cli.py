@@ -2,26 +2,31 @@
 cli.py
 ======
 
+
 Command-line interface for the BiblioMetric-Analyzer system.
+
 
 This module provides an interactive text-based menu for:
 - Fetching author publications from Scopus (Option 1)
-- Collecting citation data with SINGLE CLEAN progress bar (Option 2) 
+- Collecting citation data with DYNAMIC SINGLE CLEAN progress bar (Option 2) 
 - Computing h-index timelines with statistics (Option 3)
 - Checking API quota status (Option 4)
 - Clean exit (Option 5)
 
+
 The CLI is the primary interface for data collection workflows,
 complementing the Streamlit dashboard used for visualization.
+
 
 Workflow
 --------
 Typical usage sequence:
 1. Fetch publications (Option 1) → 📊 creates CSV/JSON files
-2. Fetch citations (Option 2) → 🚀 SINGLE clean progress bar
+2. Fetch citations (Option 2) → 🚀 DYNAMIC single progress bar (auto-fits terminal)
 3. Compute h-index timeline (Option 3) → 📈 creates timeline JSON
-4. Check quota before large runs (Option 4) → ⚠️ quota monitoring
+4. Check quota before large runs (Option 4) → ⚠ quota monitoring
 5. View results: streamlit run dashboard.py
+
 
 File Structure Created
 ----------------------
@@ -34,15 +39,18 @@ info/
         ├── {eid}_citations.json          ← Option 2
         ├── ...
 
+
 Authors: Diogo Abreu, João Machado, Pedro Lopes
 Date: 11/2025
-Version: 2.1 (SINGLE CLEAN PROGRESS BAR)
+Version: 2.2 (DYNAMIC PROGRESS BAR - AUTO-FITS TERMINAL)
 """
+
 
 import os
 import json
 import pandas as pd
 import requests
+import shutil
 from tqdm import tqdm
 from data_processing import (
     collect_publication_data,
@@ -53,19 +61,21 @@ from api_client import check_quota_via_dummy_request, API_KEY, INST_TOKEN, SEARC
 from api_client import get_citation_years_for_article_silent  # NEW: Direct silent API call
 
 
+
 def show_menu():
     """Display the standardized BiblioMetric-Analyzer menu."""
     print("\n=== 📊 BiblioMetric-Analyzer Menu ===")
     print("🔍 1. Fetch publications for an author")
     print("🚀 2. Fetch citations for all articles") 
     print("📈 3. Compute h-index timeline for an author")
-    print("⚠️  4. Check/refresh API quota info")
+    print("⚠  4. Check/refresh API quota info")
     print("❌ 5. Exit")
     return input("Choose an option: ").strip()
 
 
+
 def option_2_fetch_all_citations():
-    """🚀 Option 2: Fetch citations for ALL publications - SINGLE CLEAN BAR"""
+    """🚀 Option 2: Fetch citations for ALL publications - DYNAMIC SINGLE CLEAN BAR"""
     author_id = input("Enter Scopus Author ID: ").strip()
     author_name = input("Enter author name: ").strip()
     
@@ -105,31 +115,46 @@ def option_2_fetch_all_citations():
         return
     
     print(f"\n📊 Found {total_pubs:,} publications")
-    print(f"📊 Existing citations: {total_pubs - total_to_process:,}")
-    print(f"📊 New citations to fetch: {total_to_process:,}\n")
+    print(f"📊 Existing citations of : {total_pubs - total_to_process:,} publications")
+    print(f"📊 New citations to fetch of: {total_to_process:,} publications\n")
     
-    print(f"🚀 Fetching {total_to_process:,}/{total_pubs:,} citations")
+    print(f"🚀 Fetching the citations of {total_to_process:,}/{total_pubs:,} publications")
     
     # =====================================================
-    # SINGLE CLEAN PROGRESS BAR - NO NESTING/OVERLAP
+    # DYNAMIC SINGLE CLEAN PROGRESS BAR - AUTO-FITS TERMINAL
     # =====================================================
     new_fetched = 0
     total_citations = 0
     errors = 0
     
+    # DYNAMIC TERMINAL WIDTH
+    try:
+        term_width = shutil.get_terminal_size().columns
+        ncols = max(80, min(140, term_width - 5))  # Safe range, 5 chars margin
+    except:
+        ncols = 100  # Fallback
+    
     with tqdm(total=total_to_process, 
-             desc="📊 CITATIONS", 
+             desc="📊 Cites", 
              unit="pub", 
              leave=True, 
-             ncols=140,
-             bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]') as pbar:
+             ncols=ncols,
+             position=0) as pbar:
         
         for i, pub in enumerate(publications_to_process):
             refeid = pub.get("EID", "")
-            title = pub.get("Title", "N/A")[:35]  # Truncated title
+            title = pub.get("Title", "N/A")
+            title_short = (title[:25] + '..') if len(title) > 25 else title
             
-            # SINGLE LINE STATUS: Current pub + preview
-            pbar.set_description(f"📥 [{i+1:>3}/{total_to_process}] {refeid[:20]} | {title}")
+            # DYNAMIC DESCRIPTION: Always fits available space
+            desc_base = f"[{i+1:>3}/{total_to_process:>3}] {refeid[:16]}"
+            desc = f"{desc_base} {title_short}"
+            
+            # SMART TRUNCATION if too long
+            if len(desc) > ncols * 0.4:
+                desc = f"[{i+1:>3}/{total_to_process:>3}] {refeid[:12]}.. {title_short[:15]}.."
+            
+            pbar.set_description(desc)
             
             try:
                 # SILENT API CALL - NO INNER PROGRESS BARS
@@ -137,20 +162,20 @@ def option_2_fetch_all_citations():
                 new_fetched += 1
                 total_citations += citations_count
                 
-                # LIVE STATS: citations, new files, errors, rate
+                # COMPACT LIVE STATS - Always visible
                 pbar.set_postfix({
-                    "cites": f"{citations_count:,}",
-                    "new": new_fetched,
-                    "err": errors,
-                    "total": f"{total_citations:,}"
+                    'cites': f"{citations_count:,}",
+                    'new': new_fetched,
+                    'err': errors,
+                    'total': f"{total_citations:,}"
                 })
                 
             except Exception as ex:
                 errors += 1
                 pbar.set_postfix({
-                    "error": str(ex)[:20],
-                    "new": new_fetched,
-                    "err": errors
+                    'error': str(ex)[:20],
+                    'new': new_fetched,
+                    'err': errors
                 })
             
             pbar.update(1)
@@ -168,6 +193,7 @@ def option_2_fetch_all_citations():
     print(f"{'='*70}\n")
     
     input("Press Enter to continue...")
+
 
 
 def main():
@@ -203,7 +229,7 @@ def main():
                 total_pubs = int(total_str) if total_str.isdigit() else 0
                 print(f"📊 Found {total_pubs:,} total publications")
             else:
-                print("⚠️ Could not fetch total count, proceeding...")
+                print("⚠ Could not fetch total count, proceeding...")
             
             # Fetch with progress bar
             results = collect_publication_data(author_id, author_name, total_pubs, suppress_fetch_progress=True)
@@ -231,7 +257,7 @@ def main():
                 print("❌ No publications found.")
                 
         elif choice == "2":
-            # Option 2: NEW SINGLE CLEAN PROGRESS BAR
+            # Option 2: DYNAMIC SINGLE CLEAN PROGRESS BAR
             option_2_fetch_all_citations()
             
         elif choice == "3":
@@ -275,7 +301,7 @@ def main():
                 
         elif choice == "4":
             # Option 4: Check Quota - STANDARDIZED
-            print("\n⚠️  Checking API quota status...")
+            print("\n⚠ Checking API quota status...")
             check_quota_via_dummy_request()
             print("\n👉 Tip: Check quota before running Options 1-2 for large authors!")
             
@@ -287,6 +313,7 @@ def main():
             
         else:
             print("\n❌ Invalid option. Please choose 1-5.")
+
 
 
 if __name__ == "__main__":
